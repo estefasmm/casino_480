@@ -99,6 +99,38 @@ h2 {
     color: #ffd700;
 }
 
+/* Badge for the human player */
+.you-badge {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    background: rgba(0,0,0,0.6);
+    color: #ffd700;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-weight: 900;
+    font-size: 0.9rem;
+    display: none;
+    border: 1px solid rgba(255,215,0,0.15);
+}
+
+/* Show badge when area is human */
+.player-area.human .you-badge {
+    display: block;
+}
+
+/* Turn indicator: subtle pulsing glow when it's the human's turn */
+@keyframes pulse-turn {
+    0% { box-shadow: 0 6px 20px rgba(255, 215, 0, 0.18), inset 0 -6px 30px rgba(0,0,0,0.4); }
+    50% { box-shadow: 0 10px 30px rgba(255, 215, 0, 0.35), inset 0 -8px 40px rgba(0,0,0,0.45); }
+    100% { box-shadow: 0 6px 20px rgba(255, 215, 0, 0.18), inset 0 -6px 30px rgba(0,0,0,0.4); }
+}
+
+.player-area.turn {
+    transform: translateY(-6px) scale(1.03);
+    animation: pulse-turn 1.2s ease-in-out infinite;
+}
+
 .players-container {
     display: flex;
     justify-content: center;

@@ -210,6 +210,13 @@ export class BlackjackGame {
         // Show scores for active players only (keep order): inactive players will show 0
         const puntuaciones = this.jugadores.map(j => j.activo ? j.puntuacion : 0);
         this.ui.actualizarPuntuaciones(puntuaciones, puntCrupierDisplay);
+        // Mark turn on UI (only human area will pulse)
+        try {
+            // Some UI implementations may not implement marcarTurno; call defensively
+            (this.ui as any).marcarTurno(this.estado === 'JUGANDO' ? this.jugadorActualIndex : null);
+        } catch (e) {
+            // noop
+        }
     }
 
     /**

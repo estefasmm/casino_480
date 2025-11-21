@@ -38,6 +38,7 @@ export class BlackjackUI {
                     <div class="balance">Cartera: $<span id="player-balance-${i}">0</span></div>
                     <div class="bet">Apuesta: $<span id="player-bet-${i}">0</span></div>
                 </div>
+                <div class="you-badge" id="you-badge-${i}">TÚ</div>
             `;
             this.playersContainer.appendChild(playerArea);
         }
@@ -135,6 +136,24 @@ export class BlackjackUI {
                 }
             }
         });
+    }
+
+    /**
+     * Mark which player has the current turn. If index is null, clear turns.
+     * Only the human player's area receives the visual pulsing when it's their turn.
+     */
+    public marcarTurno(index: number | null): void {
+        // Clear existing turn classes
+        const areas = this.playersContainer.querySelectorAll('.player-area');
+        areas.forEach(a => a.classList.remove('turn'));
+
+        if (index === null) return;
+        const area = document.getElementById(`player-area-${index}`);
+        if (!area) return;
+        // Only add turn indicator if this area is marked as human
+        if (area.classList.contains('human')) {
+            area.classList.add('turn');
+        }
     }
 
     /**
