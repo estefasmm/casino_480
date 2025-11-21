@@ -126,6 +126,14 @@ export class BlackjackUI {
         tipos.forEach((tipo, i) => {
             const tipoDiv = document.getElementById(`player-type-${i}`);
             if (tipoDiv) tipoDiv.textContent = tipo;
+            const playerArea = document.getElementById(`player-area-${i}`);
+            if (playerArea) {
+                if (tipo.toLowerCase().startsWith('humano')) {
+                    playerArea.classList.add('human');
+                } else {
+                    playerArea.classList.remove('human');
+                }
+            }
         });
     }
 
