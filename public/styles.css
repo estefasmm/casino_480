@@ -228,10 +228,14 @@ h2 {
     background: linear-gradient(45deg, #ffd700, #f0c000);
     color: #111;
     border: 1px solid #dcab2d;
-    padding: 2px 60px;
+    padding: 8px 20px;
     border-radius: 8px;
     box-shadow: 0 6px 8px rgba(218,165,32,0.15);
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    text-transform: uppercase;
 }
 
 /* On hover, slightly intensify the highlight */
@@ -376,6 +380,12 @@ h2 {
     background: linear-gradient(145deg, #ffd700, #f0c000);
     color: #111;
     border-color: #DAA520;
+    padding: 8px 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    text-transform: uppercase;
 }
 
 /* Media Query para pantallas pequeñas */
