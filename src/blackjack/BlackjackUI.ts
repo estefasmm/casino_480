@@ -33,7 +33,11 @@ export class BlackjackUI {
             playerArea.innerHTML = `
                 <h2>Jugador ${i + 1}: <span id="player-score-${i}">0</span></h2>
                 <div id="player-cards-${i}" class="card-area"></div>
-                <div class="balance">Cartera: $<span id="player-balance-${i}">0</span></div>
+                <div class="player-meta">
+                    <div class="player-type" id="player-type-${i}">Jugador</div>
+                    <div class="balance">Cartera: $<span id="player-balance-${i}">0</span></div>
+                    <div class="bet">Apuesta: $<span id="player-bet-${i}">0</span></div>
+                </div>
             `;
             this.playersContainer.appendChild(playerArea);
         }
@@ -96,7 +100,32 @@ export class BlackjackUI {
     public actualizarCarteras(carteras: number[]): void {
         carteras.forEach((cartera, i) => {
             const carteraSpan = document.getElementById(`player-balance-${i}`)!;
-            carteraSpan.textContent = cartera.toString();
+            if (carteraSpan) carteraSpan.textContent = cartera.toString();
+        });
+    }
+
+    /**
+     * Update bets display per player.
+     */
+    public actualizarApuestas(apuestas: number[]): void {
+        apuestas.forEach((apuesta, i) => {
+            const apuestaSpan = document.getElementById(`player-bet-${i}`)!;
+            if (apuestaSpan) apuestaSpan.textContent = apuesta.toString();
+            const playerArea = document.getElementById(`player-area-${i}`);
+            if (playerArea) {
+                if (apuesta <= 0) playerArea.classList.add('inactive');
+                else playerArea.classList.remove('inactive');
+            }
+        });
+    }
+
+    /**
+     * Update player type (Humano / IA) labels.
+     */
+    public actualizarTipos(tipos: string[]): void {
+        tipos.forEach((tipo, i) => {
+            const tipoDiv = document.getElementById(`player-type-${i}`);
+            if (tipoDiv) tipoDiv.textContent = tipo;
         });
     }
 

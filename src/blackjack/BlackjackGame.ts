@@ -53,11 +53,13 @@ export class BlackjackGame {
      */
     public nuevaRonda(): void {
         this.cambiarEstado('APOSTANDO');
-        this.jugadores.forEach(j => j.reiniciarMano());
-        this.crupier.reiniciarMano();
+        this.jugadores.forEach(j => j.reiniciarParaRonda());
+        this.crupier.reiniciarParaRonda();
         this.baraja.reiniciar(); // Reset and shuffle the deck
         this.ui.limpiarTablero(this.numeroJugadores);
         this.ui.actualizarCarteras(this.jugadores.map(j => j.cartera));
+        this.ui.actualizarApuestas(this.jugadores.map(j => j.apuestaActual));
+        this.ui.actualizarTipos(this.jugadores.map(j => j.esHumano ? 'Humano' : 'IA'));
         this.ui.actualizarApuesta(this.apuestaActual);
         this.ui.mostrarMensaje('Realiza tu apuesta para empezar la ronda.');
         this.jugadorActualIndex = 0; // Reset player turn
@@ -95,7 +97,7 @@ export class BlackjackGame {
     public realizarApuesta(): void {
         if (this.estado !== 'APOSTANDO') return;
         let humanCanBet = true;
-        // AI players will attempt to bet automatically; if they can't, they become inactive for this round
+        // AI players will attempt to bet automatically; if they can't cover full bet they go all-in; if they have zero, they become inactive
         this.jugadores.forEach(jugador => {
             if (jugador.esHumano) {
                 if (!jugador.apostar(this.apuestaActual)) {
@@ -103,21 +105,26 @@ export class BlackjackGame {
                 }
             } else {
                 if (!jugador.apostar(this.apuestaActual)) {
-                    jugador.activo = false; // skip this AI player this round
+                    // Try all-in
+                    if (!jugador.apostarTodo()) {
+                        jugador.activo = false; // skip this AI player this round
+                    }
                 }
             }
         });
 
         if (!humanCanBet) {
             this.ui.mostrarMensaje('No tienes suficiente dinero para la apuesta actual.');
-            // Refund any AI bets that were placed
-            this.jugadores.forEach(j => { if (!j.esHumano) j.ganar(this.apuestaActual); });
+            // Refund any AI bets that were placed (they may have bet all-in already)
+            this.jugadores.forEach(j => { if (!j.esHumano && j.apuestaActual > 0) j.ganar(j.apuestaActual); j.apuestaActual = 0; });
             this.ui.actualizarCarteras(this.jugadores.map(j => j.cartera));
+            this.ui.actualizarApuestas(this.jugadores.map(j => j.apuestaActual));
             return;
         }
 
         this.cambiarEstado('JUGANDO');
         this.ui.actualizarCarteras(this.jugadores.map(j => j.cartera));
+        this.ui.actualizarApuestas(this.jugadores.map(j => j.apuestaActual));
         this.ui.mostrarMensaje(`Turno del Jugador ${this.jugadorActualIndex + 1}. ¿Pedir carta o plantarse?`);
 
         // Deal initial two cards to each player and the dealer
@@ -287,22 +294,22 @@ export class BlackjackGame {
             const puntJugador = jugador.puntuacion;
             const esBlackjackJugador = puntJugador === 21 && jugador.mano.length === 2;
             const esBlackjackCrupier = puntCrupier === 21 && this.crupier.mano.length === 2;
+            const apuestaJugador = jugador.apuestaActual || this.apuestaActual;
 
             if (puntJugador > 21) {
                 mensajeFinal += `${jugador.id}: Pierde. `; // Busted
             } else if (esBlackjackJugador && !esBlackjackCrupier) {
-                jugador.ganar(this.apuestaActual * 2.5); // Blackjack pays 3:2 (1.5x original bet + original bet)
+                jugador.ganar(apuestaJugador * 2.5); // Blackjack pays 3:2
                 mensajeFinal += `${jugador.id}: ¡Blackjack! Gana. `;
             } else if (puntCrupier > 21 || puntJugador > puntCrupier) {
-                jugador.ganar(this.apuestaActual * 2); // Player wins, gets original bet + original bet
+                jugador.ganar(apuestaJugador * 2); // Player wins
                 mensajeFinal += `${jugador.id}: Gana. `;
             } else if (puntCrupier > puntJugador) {
                 mensajeFinal += `${jugador.id}: Pierde. `; // Dealer wins
             } else if (puntJugador === puntCrupier) {
-                jugador.ganar(this.apuestaActual); // Push, get original bet back
+                jugador.ganar(apuestaJugador); // Push
                 mensajeFinal += `${jugador.id}: Empate. `;
             } else {
-                // Should not happen, but for completeness
                 mensajeFinal += `${jugador.id}: Resultado indefinido. `;
             }
         });
