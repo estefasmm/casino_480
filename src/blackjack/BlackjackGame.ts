@@ -59,7 +59,7 @@ export class BlackjackGame {
         this.ui.limpiarTablero(this.numeroJugadores);
         this.ui.actualizarCarteras(this.jugadores.map(j => j.cartera));
         this.ui.actualizarApuestas(this.jugadores.map(j => j.apuestaActual));
-        this.ui.actualizarTipos(this.jugadores.map(j => j.esHumano ? 'Humano' : 'IA'));
+        this.ui.actualizarTipos(this.jugadores.map(j => j.esHumano ? 'Humano' : 'IA (conservadora)'));
         this.ui.actualizarApuesta(this.apuestaActual);
         this.ui.mostrarMensaje('Realiza tu apuesta para empezar la ronda.');
         this.jugadorActualIndex = 0; // Reset player turn
@@ -166,7 +166,8 @@ export class BlackjackGame {
                 // AI player: play automatically like the dealer
                 (async () => {
                     this.ui.mostrarMensaje(`Jugador ${i + 1} (IA) está jugando...`);
-                    while (jugador.puntuacion < 17) {
+                    // IA conservadora: plantarse en 16 o más (menos agresiva que el crupier)
+                    while (jugador.puntuacion < 16) {
                         await this.sleep(800);
                         const card = this.baraja.robar();
                         if (card) jugador.agregarCarta(card);
