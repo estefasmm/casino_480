@@ -86,5 +86,4 @@ export class PokerUI {
         this.mensajesDiv.textContent = ''; // Clear messages too
     }
 }
-// Additional UI methods for Poker actions (betting, checking, folding) would go here.
 //# sourceMappingURL=PokerUI.js.map

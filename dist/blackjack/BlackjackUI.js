@@ -30,7 +30,12 @@ export class BlackjackUI {
             playerArea.innerHTML = `
                 <h2>Jugador ${i + 1}: <span id="player-score-${i}">0</span></h2>
                 <div id="player-cards-${i}" class="card-area"></div>
-                <div class="balance">Cartera: $<span id="player-balance-${i}">0</span></div>
+                <div class="player-meta">
+                    <div class="player-type" id="player-type-${i}">Jugador</div>
+                    <div class="balance">Cartera: $<span id="player-balance-${i}">0</span></div>
+                    <div class="bet">Apuesta: $<span id="player-bet-${i}">0</span></div>
+                </div>
+                <div class="you-badge" id="you-badge-${i}">TÚ</div>
             `;
             this.playersContainer.appendChild(playerArea);
         }
@@ -87,8 +92,63 @@ export class BlackjackUI {
     actualizarCarteras(carteras) {
         carteras.forEach((cartera, i) => {
             const carteraSpan = document.getElementById(`player-balance-${i}`);
-            carteraSpan.textContent = cartera.toString();
+            if (carteraSpan)
+                carteraSpan.textContent = cartera.toString();
         });
+    }
+    /**
+     * Update bets display per player.
+     */
+    actualizarApuestas(apuestas) {
+        apuestas.forEach((apuesta, i) => {
+            const apuestaSpan = document.getElementById(`player-bet-${i}`);
+            if (apuestaSpan)
+                apuestaSpan.textContent = apuesta.toString();
+            const playerArea = document.getElementById(`player-area-${i}`);
+            if (playerArea) {
+                if (apuesta <= 0)
+                    playerArea.classList.add('inactive');
+                else
+                    playerArea.classList.remove('inactive');
+            }
+        });
+    }
+    /**
+     * Update player type (Humano / IA) labels.
+     */
+    actualizarTipos(tipos) {
+        tipos.forEach((tipo, i) => {
+            const tipoDiv = document.getElementById(`player-type-${i}`);
+            if (tipoDiv)
+                tipoDiv.textContent = tipo;
+            const playerArea = document.getElementById(`player-area-${i}`);
+            if (playerArea) {
+                if (tipo.toLowerCase().startsWith('humano')) {
+                    playerArea.classList.add('human');
+                }
+                else {
+                    playerArea.classList.remove('human');
+                }
+            }
+        });
+    }
+    /**
+     * Mark which player has the current turn. If index is null, clear turns.
+     * Only the human player's area receives the visual pulsing when it's their turn.
+     */
+    marcarTurno(index) {
+        // Clear existing turn classes
+        const areas = this.playersContainer.querySelectorAll('.player-area');
+        areas.forEach(a => a.classList.remove('turn'));
+        if (index === null)
+            return;
+        const area = document.getElementById(`player-area-${index}`);
+        if (!area)
+            return;
+        // Only add turn indicator if this area is marked as human
+        if (area.classList.contains('human')) {
+            area.classList.add('turn');
+        }
     }
     /**
      * Updates the displayed current bet amount.

@@ -15,11 +15,15 @@ export class BlackjackGame {
         this.apuestaActual = 10;
         this.INCREMENTO_APUESTA = 10;
         this.jugadorActualIndex = 0;
-        this.ui.crearAreasDeJugador(numeroJugadores);
-        for (let i = 0; i < numeroJugadores; i++) {
-            this.jugadores.push(new BlackjackPlayer(`Jugador ${i + 1}`, carteraInicial));
+        // Limit maximum players to 4
+        this.numeroJugadores = Math.min(Math.max(1, numeroJugadores), 4);
+        this.ui.crearAreasDeJugador(this.numeroJugadores);
+        for (let i = 0; i < this.numeroJugadores; i++) {
+            // Only the first player is the human; others are AI-controlled players that play like the dealer
+            const esHumano = i === 0;
+            this.jugadores.push(new BlackjackPlayer(`Jugador ${i + 1}`, carteraInicial, false, esHumano));
         }
-        this.crupier = new BlackjackPlayer('Crupier', 0, true); // Dealer has no personal balance for betting
+        this.crupier = new BlackjackPlayer('Crupier', 0, true, false); // Dealer has no personal balance for betting
         this.ui.configurarBotones({
             nuevaRonda: () => this.nuevaRonda(),
             pedirCarta: () => this.pedirCarta(),
@@ -44,11 +48,13 @@ export class BlackjackGame {
      */
     nuevaRonda() {
         this.cambiarEstado('APOSTANDO');
-        this.jugadores.forEach(j => j.reiniciarMano());
-        this.crupier.reiniciarMano();
+        this.jugadores.forEach(j => j.reiniciarParaRonda());
+        this.crupier.reiniciarParaRonda();
         this.baraja.reiniciar(); // Reset and shuffle the deck
         this.ui.limpiarTablero(this.numeroJugadores);
         this.ui.actualizarCarteras(this.jugadores.map(j => j.cartera));
+        this.ui.actualizarApuestas(this.jugadores.map(j => j.apuestaActual));
+        this.ui.actualizarTipos(this.jugadores.map(j => j.esHumano ? 'Humano' : 'IA (conservadora)'));
         this.ui.actualizarApuesta(this.apuestaActual);
         this.ui.mostrarMensaje('Realiza tu apuesta para empezar la ronda.');
         this.jugadorActualIndex = 0; // Reset player turn
@@ -86,28 +92,45 @@ export class BlackjackGame {
     realizarApuesta() {
         if (this.estado !== 'APOSTANDO')
             return;
-        let todosPuedenApostar = true;
+        let humanCanBet = true;
+        // AI players will attempt to bet automatically; if they can't cover full bet they go all-in; if they have zero, they become inactive
         this.jugadores.forEach(jugador => {
-            if (!jugador.apostar(this.apuestaActual)) {
-                todosPuedenApostar = false;
+            if (jugador.esHumano) {
+                if (!jugador.apostar(this.apuestaActual)) {
+                    humanCanBet = false;
+                }
+            }
+            else {
+                if (!jugador.apostar(this.apuestaActual)) {
+                    // Try all-in
+                    if (!jugador.apostarTodo()) {
+                        jugador.activo = false; // skip this AI player this round
+                    }
+                }
             }
         });
-        if (!todosPuedenApostar) {
-            this.ui.mostrarMensaje('Alguno de los jugadores no tiene suficiente dinero para la apuesta actual.');
-            // Refund money to players who could afford it but the round didn't start
-            this.jugadores.forEach(j => j.ganar(this.apuestaActual));
+        if (!humanCanBet) {
+            this.ui.mostrarMensaje('No tienes suficiente dinero para la apuesta actual.');
+            // Refund any AI bets that were placed (they may have bet all-in already)
+            this.jugadores.forEach(j => { if (!j.esHumano && j.apuestaActual > 0)
+                j.ganar(j.apuestaActual); j.apuestaActual = 0; });
             this.ui.actualizarCarteras(this.jugadores.map(j => j.cartera));
+            this.ui.actualizarApuestas(this.jugadores.map(j => j.apuestaActual));
             return;
         }
         this.cambiarEstado('JUGANDO');
         this.ui.actualizarCarteras(this.jugadores.map(j => j.cartera));
+        this.ui.actualizarApuestas(this.jugadores.map(j => j.apuestaActual));
         this.ui.mostrarMensaje(`Turno del Jugador ${this.jugadorActualIndex + 1}. ¿Pedir carta o plantarse?`);
         // Deal initial two cards to each player and the dealer
         for (let i = 0; i < 2; i++) {
             for (let j = 0; j < this.jugadores.length; j++) {
+                const jugador = this.jugadores[j];
+                if (!jugador.activo)
+                    continue;
                 const card = this.baraja.robar();
                 if (card)
-                    this.jugadores[j].agregarCarta(card);
+                    jugador.agregarCarta(card);
             }
             const dealerCard = this.baraja.robar();
             if (dealerCard)
@@ -120,21 +143,39 @@ export class BlackjackGame {
      * Proceeds to the next player's turn, or initiates the dealer's turn if all players have acted.
      */
     siguienteTurno() {
-        // Find the next player who is still in the game (not busted and not stood)
-        let nextPlayerFound = false;
-        for (let i = this.jugadorActualIndex + 1; i < this.numeroJugadores; i++) {
-            // A player is "done" with their turn if they have busted (score > 21) or already stood (implicitly by not having a turn)
-            // For now, simpler: next player always gets a turn unless they busted.
-            if (this.jugadores[i].puntuacion <= 21) {
-                this.jugadorActualIndex = i;
-                nextPlayerFound = true;
+        // Find the next active player index after the current
+        for (let i = this.jugadorActualIndex + 1; i < this.jugadores.length; i++) {
+            const jugador = this.jugadores[i];
+            if (!jugador.activo)
+                continue;
+            if (jugador.puntuacion > 21)
+                continue; // busted
+            this.jugadorActualIndex = i;
+            if (jugador.esHumano) {
                 this.ui.mostrarMensaje(`Turno del Jugador ${this.jugadorActualIndex + 1}. ¿Pedir carta o plantarse?`);
-                if (this.jugadores[this.jugadorActualIndex].puntuacion === 21) {
-                    // If next player has 21, automatically move to next or dealer
+                // If human already has 21, auto-advance
+                if (jugador.puntuacion === 21) {
                     this.ui.mostrarMensaje(`Jugador ${this.jugadorActualIndex + 1} tiene 21! Pasando al siguiente.`);
                     this.siguienteTurno();
                 }
-                return; // Player turn handled, exit
+                return;
+            }
+            else {
+                // AI player: play automatically like the dealer
+                (async () => {
+                    this.ui.mostrarMensaje(`Jugador ${i + 1} (IA) está jugando...`);
+                    // IA conservadora: plantarse en 16 o más (menos agresiva que el crupier)
+                    while (jugador.puntuacion < 16) {
+                        await this.sleep(800);
+                        const card = this.baraja.robar();
+                        if (card)
+                            jugador.agregarCarta(card);
+                        this.actualizarVista();
+                    }
+                    // After AI finishes, move to next
+                    this.siguienteTurno();
+                })();
+                return;
             }
         }
         // If no more players, it's the dealer's turn
@@ -148,6 +189,8 @@ export class BlackjackGame {
         this.ui.limpiarTablero(this.numeroJugadores); // Clear existing cards
         // Display player cards
         this.jugadores.forEach((jugador, i) => {
+            if (!jugador.activo)
+                return;
             jugador.mano.forEach((card, j) => {
                 this.ui.mostrarCarta(card, i, false, false, j, jugador.mano.length);
             });
@@ -159,7 +202,17 @@ export class BlackjackGame {
         });
         // Determine dealer's displayed score (hide first card's value if hidden)
         const puntCrupierDisplay = ocultarCartaCrupier ? BlackjackPlayer.getBlackjackCardValue(this.crupier.mano[1]?.rango || '2') : this.crupier.puntuacion;
-        this.ui.actualizarPuntuaciones(this.jugadores.map(j => j.puntuacion), puntCrupierDisplay);
+        // Show scores for active players only (keep order): inactive players will show 0
+        const puntuaciones = this.jugadores.map(j => j.activo ? j.puntuacion : 0);
+        this.ui.actualizarPuntuaciones(puntuaciones, puntCrupierDisplay);
+        // Mark turn on UI (only human area will pulse)
+        try {
+            // Some UI implementations may not implement marcarTurno; call defensively
+            this.ui.marcarTurno(this.estado === 'JUGANDO' ? this.jugadorActualIndex : null);
+        }
+        catch (e) {
+            // noop
+        }
     }
     /**
      * Player requests another card ("Hit").
@@ -168,6 +221,8 @@ export class BlackjackGame {
         if (this.estado !== 'JUGANDO')
             return;
         const jugadorActual = this.jugadores[this.jugadorActualIndex];
+        if (!jugadorActual.esHumano)
+            return; // Only human can request via UI
         const card = this.baraja.robar();
         if (card)
             jugadorActual.agregarCarta(card);
@@ -183,6 +238,9 @@ export class BlackjackGame {
     plantarse() {
         if (this.estado !== 'JUGANDO')
             return;
+        const jugadorActual = this.jugadores[this.jugadorActualIndex];
+        if (!jugadorActual.esHumano)
+            return; // Only human can plantarse via UI
         this.ui.mostrarMensaje(`Jugador ${this.jugadorActualIndex + 1} se planta.`);
         this.siguienteTurno(); // Move to next player or dealer
     }
@@ -192,6 +250,8 @@ export class BlackjackGame {
     comprobarBlackjackInicial() {
         let anyBlackjack = false;
         this.jugadores.forEach((jugador, i) => {
+            if (!jugador.activo)
+                return;
             if (jugador.puntuacion === 21 && jugador.mano.length === 2) {
                 this.ui.mostrarMensaje(`¡Jugador ${i + 1} tiene Blackjack!`);
                 anyBlackjack = true;
@@ -231,29 +291,31 @@ export class BlackjackGame {
         const puntCrupier = this.crupier.puntuacion;
         let mensajeFinal = '';
         this.jugadores.forEach((jugador, i) => {
+            if (!jugador.activo)
+                return;
             const puntJugador = jugador.puntuacion;
             const esBlackjackJugador = puntJugador === 21 && jugador.mano.length === 2;
             const esBlackjackCrupier = puntCrupier === 21 && this.crupier.mano.length === 2;
+            const apuestaJugador = jugador.apuestaActual || this.apuestaActual;
             if (puntJugador > 21) {
                 mensajeFinal += `${jugador.id}: Pierde. `; // Busted
             }
             else if (esBlackjackJugador && !esBlackjackCrupier) {
-                jugador.ganar(this.apuestaActual * 2.5); // Blackjack pays 3:2 (1.5x original bet + original bet)
+                jugador.ganar(apuestaJugador * 2.5); // Blackjack pays 3:2
                 mensajeFinal += `${jugador.id}: ¡Blackjack! Gana. `;
             }
             else if (puntCrupier > 21 || puntJugador > puntCrupier) {
-                jugador.ganar(this.apuestaActual * 2); // Player wins, gets original bet + original bet
+                jugador.ganar(apuestaJugador * 2); // Player wins
                 mensajeFinal += `${jugador.id}: Gana. `;
             }
             else if (puntCrupier > puntJugador) {
                 mensajeFinal += `${jugador.id}: Pierde. `; // Dealer wins
             }
             else if (puntJugador === puntCrupier) {
-                jugador.ganar(this.apuestaActual); // Push, get original bet back
+                jugador.ganar(apuestaJugador); // Push
                 mensajeFinal += `${jugador.id}: Empate. `;
             }
             else {
-                // Should not happen, but for completeness
                 mensajeFinal += `${jugador.id}: Resultado indefinido. `;
             }
         });

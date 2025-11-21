@@ -5,13 +5,17 @@ import { Jugador } from '../common/Player.js';
  * as well as methods for calculating score and managing bets.
  */
 export class BlackjackPlayer extends Jugador {
-    constructor(id, carteraInicial = 1000, esCrupier = false) {
+    constructor(id, carteraInicial = 1000, esCrupier = false, esHumano = false) {
         super(id); // Call the constructor of the base Jugador class
         this.puntuacion = 0;
         this.cartera = 0;
         this.esCrupier = false;
+        this.esHumano = false; // true for the real human player
+        this.activo = true; // false if the player is out for the round
+        this.apuestaActual = 0; // current bet placed by this player for the round
         this.cartera = carteraInicial;
         this.esCrupier = esCrupier;
+        this.esHumano = esHumano;
     }
     /**
      * Determines the Blackjack value of a card based on its rank.
@@ -68,6 +72,7 @@ export class BlackjackPlayer extends Jugador {
         if (cantidad > this.cartera)
             return false;
         this.cartera -= cantidad;
+        this.apuestaActual = cantidad;
         return true;
     }
     /**
@@ -76,6 +81,25 @@ export class BlackjackPlayer extends Jugador {
      */
     ganar(cantidad) {
         this.cartera += cantidad;
+    }
+    /**
+     * Bet all remaining funds (all-in). Returns false if no funds.
+     */
+    apostarTodo() {
+        if (this.cartera <= 0)
+            return false;
+        this.apuestaActual = this.cartera;
+        this.cartera = 0;
+        return true;
+    }
+    /**
+     * Reset per-round state like apuestaActual and activo.
+     */
+    reiniciarParaRonda() {
+        this.apuestaActual = 0;
+        this.activo = true;
+        this.reiniciarMano();
+        this.puntuacion = 0;
     }
 }
 //# sourceMappingURL=BlackjackPlayer.js.map
