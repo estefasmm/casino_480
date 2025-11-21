@@ -186,6 +186,60 @@ h2 {
     }
 }
 
+/* Blackjack betting controls: put +/- together and style the 'Apostar' area */
+#game-container .bet-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Force ordering so - and + are adjacent, then the current-bet, then the bet button */
+#game-container .bet-controls #decrease-bet-button { order: 1; }
+#game-container .bet-controls #increase-bet-button { order: 2; }
+#game-container .bet-controls .current-bet { order: 3; }
+#game-container .bet-controls #bet-button { order: 4; }
+
+/* Make +/- buttons visually grouped */
+#game-container .bet-controls #decrease-bet-button,
+#game-container .bet-controls #increase-bet-button {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 6px;
+    background: linear-gradient(145deg, #333, #111);
+    color: #ffd700;
+    border-color: rgba(255,215,0,0.15);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Current bet styling */
+#game-container .bet-controls .current-bet {
+    background: rgba(0,0,0,0.45);
+    padding: 6px 10px;
+    border-radius: 6px;
+    color: #fff;
+    font-weight: 700;
+}
+
+/* Make the main 'Apostar' button more semantically highlighted */
+#game-container .bet-controls #bet-button {
+    background: linear-gradient(45deg, #ffd700, #f0c000);
+    color: #111;
+    border: 1px solid #dcab2d;
+    padding: 2px 60px;
+    border-radius: 8px;
+    box-shadow: 0 6px 8px rgba(218,165,32,0.15);
+    display: inline-block;
+}
+
+/* On hover, slightly intensify the highlight */
+#game-container .bet-controls #bet-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(218,165,32,0.25);
+}
+
 .player-area.turn {
     transform: translateY(-6px) scale(1.03);
     animation: pulse-turn 1.2s ease-in-out infinite;
