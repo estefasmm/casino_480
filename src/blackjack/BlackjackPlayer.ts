@@ -10,11 +10,14 @@ export class BlackjackPlayer extends Jugador {
     public puntuacion: number = 0;
     public cartera: number = 0;
     public esCrupier: boolean = false;
+    public esHumano: boolean = false; // true for the real human player
+    public activo: boolean = true; // false if the player is out for the round
 
-    constructor(id: string, carteraInicial: number = 1000, esCrupier: boolean = false) {
+    constructor(id: string, carteraInicial: number = 1000, esCrupier: boolean = false, esHumano: boolean = false) {
         super(id); // Call the constructor of the base Jugador class
         this.cartera = carteraInicial;
         this.esCrupier = esCrupier;
+        this.esHumano = esHumano;
     }
 
     /**
