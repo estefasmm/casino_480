@@ -1,6 +1,7 @@
 import { Baraja } from '../common/Deck.js';
 import { BlackjackPlayer } from './BlackjackPlayer.js';
-import { BlackjackUI, BlackjackEstadoJuego } from './BlackjackUI.js';
+import { BlackjackUI } from './BlackjackUI.js';
+import type { BlackjackEstadoJuego } from './types.js';
 
 /**
  * Manages the core logic and flow of a Blackjack game.

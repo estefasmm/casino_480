@@ -1,7 +1,5 @@
 import { Carta } from '../common/Card.js';
-
-// Define the game state type locally for UI management
-export type BlackjackEstadoJuego = 'APOSTANDO' | 'JUGANDO' | 'FIN_RONDA';
+import type { BlackjackEstadoJuego } from './types.js';
 
 /**
  * Manages the User Interface for the Blackjack game.
