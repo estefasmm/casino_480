@@ -22,7 +22,9 @@ export class BlackjackGame {
         // Limit maximum players to 4
         this.numeroJugadores = Math.min(Math.max(1, numeroJugadores), 4);
             this.lang = lang;
-            this.ui.setLanguage(this.lang);
+            if (typeof (this.ui as any).setLanguage === 'function') {
+                (this.ui as any).setLanguage(this.lang);
+            }
             this.ui.crearAreasDeJugador(this.numeroJugadores);
         for (let i = 0; i < this.numeroJugadores; i++) {
             // Only the first player is the human; others are AI-controlled players that play like the dealer
@@ -64,9 +66,13 @@ export class BlackjackGame {
         this.ui.limpiarTablero(this.numeroJugadores);
         this.ui.actualizarCarteras(this.jugadores.map(j => j.cartera));
         this.ui.actualizarApuestas(this.jugadores.map(j => j.apuestaActual));
-        // Update types (used to mark human area) and names separately
-        this.ui.actualizarTipos(this.jugadores.map(j => j.esHumano ? 'Humano' : 'IA (conservadora)'));
-        this.ui.actualizarNombres(this.jugadores.map(j => j.id));
+        // Update types (used to mark human area) and names separately (call defensively if UI implements)
+        if (typeof (this.ui as any).actualizarTipos === 'function') {
+            (this.ui as any).actualizarTipos(this.jugadores.map((j: any) => j.esHumano ? 'Humano' : 'IA (conservadora)'));
+        }
+        if (typeof (this.ui as any).actualizarNombres === 'function') {
+            (this.ui as any).actualizarNombres(this.jugadores.map((j: any) => j.id));
+        }
         this.ui.actualizarApuesta(this.apuestaActual);
         this.ui.mostrarMensaje(t(this.lang, 'bet.place_prompt'));
         this.jugadorActualIndex = 0; // Reset player turn
