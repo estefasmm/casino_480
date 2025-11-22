@@ -24,6 +24,32 @@
     animation: fadeInDown 1.5s ease-out;
 }
 
+/* Language selector (discreet, top-left) */
+.lang-selector {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(0,0,0,0.6);
+    padding: 6px 8px;
+    border-radius: 6px;
+    z-index: 1200;
+    border: 1px solid rgba(255,215,0,0.12);
+}
+.lang-selector select {
+    background: transparent;
+    color: #ffd700;
+    border: none;
+    font-size: 0.9rem;
+    font-family: 'Cinzel', serif;
+    padding: 2px 4px;
+}
+.visually-hidden {
+    position: absolute !important;
+    height: 1px; width: 1px;
+    overflow: hidden; clip: rect(1px, 1px, 1px, 1px);
+    white-space: nowrap; border: 0; padding: 0; margin: -1px;
+}
+
 .game-selection {
     display: flex;
     gap: 2rem;
