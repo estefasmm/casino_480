@@ -1,6 +1,7 @@
 import { Baraja } from '../common/Deck.js';
 import { BlackjackPlayer } from './BlackjackPlayer.js';
 import { BlackjackUI } from './BlackjackUI.js';
+import { t } from '../i18n.js';
 import type { BlackjackEstadoJuego } from './types.js';
 
 /**
@@ -67,7 +68,7 @@ export class BlackjackGame {
         this.ui.actualizarTipos(this.jugadores.map(j => j.esHumano ? 'Humano' : 'IA (conservadora)'));
         this.ui.actualizarNombres(this.jugadores.map(j => j.id));
         this.ui.actualizarApuesta(this.apuestaActual);
-        this.ui.mostrarMensaje('Realiza tu apuesta para empezar la ronda.');
+        this.ui.mostrarMensaje(t(this.lang, 'bet.place_prompt'));
         this.jugadorActualIndex = 0; // Reset player turn
     }
 
@@ -81,7 +82,7 @@ export class BlackjackGame {
             this.apuestaActual += this.INCREMENTO_APUESTA;
             this.ui.actualizarApuesta(this.apuestaActual);
         } else {
-            this.ui.mostrarMensaje('No puedes aumentar la apuesta, algunos jugadores no tienen suficiente dinero.');
+            this.ui.mostrarMensaje(t(this.lang, 'bet.cannot_increase'));
         }
     }
 
@@ -120,7 +121,7 @@ export class BlackjackGame {
         });
 
         if (!humanCanBet) {
-            this.ui.mostrarMensaje('No tienes suficiente dinero para la apuesta actual.');
+            this.ui.mostrarMensaje(t(this.lang, 'bet.human_insufficient'));
             // Refund any AI bets that were placed (they may have bet all-in already)
             this.jugadores.forEach(j => { if (!j.esHumano && j.apuestaActual > 0) j.ganar(j.apuestaActual); j.apuestaActual = 0; });
             this.ui.actualizarCarteras(this.jugadores.map(j => j.cartera));
@@ -131,7 +132,7 @@ export class BlackjackGame {
         this.cambiarEstado('JUGANDO');
         this.ui.actualizarCarteras(this.jugadores.map(j => j.cartera));
         this.ui.actualizarApuestas(this.jugadores.map(j => j.apuestaActual));
-        this.ui.mostrarMensaje(`Turno del Jugador ${this.jugadorActualIndex + 1}. ¿Pedir carta o plantarse?`);
+        this.ui.mostrarMensaje(t(this.lang, 'turn.player_prompt', { index: this.jugadorActualIndex + 1 }));
 
         // Deal initial two cards to each player and the dealer
         for (let i = 0; i < 2; i++) {
@@ -161,17 +162,17 @@ export class BlackjackGame {
 
             this.jugadorActualIndex = i;
             if (jugador.esHumano) {
-                this.ui.mostrarMensaje(`Turno del Jugador ${this.jugadorActualIndex + 1}. ¿Pedir carta o plantarse?`);
+                this.ui.mostrarMensaje(t(this.lang, 'turn.player_prompt', { index: this.jugadorActualIndex + 1 }));
                 // If human already has 21, auto-advance
                 if (jugador.puntuacion === 21) {
-                    this.ui.mostrarMensaje(`Jugador ${this.jugadorActualIndex + 1} tiene 21! Pasando al siguiente.`);
+                    this.ui.mostrarMensaje(t(this.lang, 'player.blackjack', { index: this.jugadorActualIndex + 1 }));
                     this.siguienteTurno();
                 }
                 return;
             } else {
                 // AI player: play automatically like the dealer
                 (async () => {
-                    this.ui.mostrarMensaje(`Jugador ${i + 1} (IA) está jugando...`);
+                    this.ui.mostrarMensaje(t(this.lang, 'turn.player_prompt', { index: i + 1 }));
                     // IA conservadora: plantarse en 16 o más (menos agresiva que el crupier)
                     while (jugador.puntuacion < 16) {
                         await this.sleep(800);
@@ -237,7 +238,7 @@ export class BlackjackGame {
         
         this.actualizarVista();
         if (jugadorActual.puntuacion > 21) {
-            this.ui.mostrarMensaje(`Jugador ${this.jugadorActualIndex + 1} se ha pasado con ${jugadorActual.puntuacion}!`);
+            this.ui.mostrarMensaje(t(this.lang, 'player.busted', { index: this.jugadorActualIndex + 1, score: jugadorActual.puntuacion }));
             this.siguienteTurno(); // Move to next player or dealer
         }
     }
@@ -249,7 +250,7 @@ export class BlackjackGame {
         if (this.estado !== 'JUGANDO') return;
         const jugadorActual = this.jugadores[this.jugadorActualIndex];
         if (!jugadorActual.esHumano) return; // Only human can plantarse via UI
-        this.ui.mostrarMensaje(`Jugador ${this.jugadorActualIndex + 1} se planta.`);
+        this.ui.mostrarMensaje(t(this.lang, 'player.stand', { index: this.jugadorActualIndex + 1 }));
         this.siguienteTurno(); // Move to next player or dealer
     }
 
@@ -261,12 +262,12 @@ export class BlackjackGame {
         this.jugadores.forEach((jugador, i) => {
             if (!jugador.activo) return;
             if (jugador.puntuacion === 21 && jugador.mano.length === 2) {
-                this.ui.mostrarMensaje(`¡Jugador ${i + 1} tiene Blackjack!`);
+                this.ui.mostrarMensaje(t(this.lang, 'player.blackjack', { index: i + 1 }));
                 anyBlackjack = true;
             }
         });
         if (this.crupier.puntuacion === 21 && this.crupier.mano.length === 2) {
-            this.ui.mostrarMensaje('¡Crupier tiene Blackjack!');
+            this.ui.mostrarMensaje(t(this.lang, 'dealer.blackjack'));
             anyBlackjack = true;
         }
 
@@ -283,7 +284,7 @@ export class BlackjackGame {
      */
     private async turnoDelCrupier(): Promise<void> {
         this.cambiarEstado('FIN_RONDA');
-        this.ui.mostrarMensaje('Turno del Crupier...');
+        this.ui.mostrarMensaje(t(this.lang, 'turn.dealer'));
         this.actualizarVista(false); // Show all dealer cards
 
         while (this.crupier.puntuacion < 17) {
@@ -311,18 +312,18 @@ export class BlackjackGame {
             const apuestaJugador = jugador.apuestaActual || this.apuestaActual;
 
             if (puntJugador > 21) {
-                mensajeFinal += `${jugador.id}: Pierde. `; // Busted
+                mensajeFinal += t(this.lang, 'result.lose', { name: jugador.id }) + ' ';
             } else if (esBlackjackJugador && !esBlackjackCrupier) {
                 jugador.ganar(apuestaJugador * 2.5); // Blackjack pays 3:2
-                mensajeFinal += `${jugador.id}: ¡Blackjack! Gana. `;
+                mensajeFinal += t(this.lang, 'result.win', { name: jugador.id }) + ' ';
             } else if (puntCrupier > 21 || puntJugador > puntCrupier) {
                 jugador.ganar(apuestaJugador * 2); // Player wins
-                mensajeFinal += `${jugador.id}: Gana. `;
+                mensajeFinal += t(this.lang, 'result.win', { name: jugador.id }) + ' ';
             } else if (puntCrupier > puntJugador) {
-                mensajeFinal += `${jugador.id}: Pierde. `; // Dealer wins
+                mensajeFinal += t(this.lang, 'result.lose', { name: jugador.id }) + ' ';
             } else if (puntJugador === puntCrupier) {
                 jugador.ganar(apuestaJugador); // Push
-                mensajeFinal += `${jugador.id}: Empate. `;
+                mensajeFinal += t(this.lang, 'result.push', { name: jugador.id }) + ' ';
             } else {
                 mensajeFinal += `${jugador.id}: Resultado indefinido. `;
             }
@@ -342,7 +343,7 @@ export class BlackjackGame {
         this.ui.actualizarCarteras(this.jugadores.map(j => j.cartera));
 
         if (this.jugadores.every(j => j.cartera <= 0)) { // Changed to <= 0 to account for potentially negative balances if betting logic is changed
-            this.ui.mostrarMensaje('Todos los jugadores se han quedado sin dinero. ¡Fin del juego!');
+            this.ui.mostrarMensaje(t(this.lang, 'round.finished_all_out'));
             // Optionally disable buttons or redirect
         }
     }

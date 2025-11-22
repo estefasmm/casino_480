@@ -2,6 +2,7 @@ import { Baraja } from '../common/Deck.js';
 import { Carta, Rango } from '../common/Card.js';
 import { PokerPlayer } from './PokerPlayer.js';
 import { PokerUI } from './PokerUI.js';
+import { t } from '../i18n.js';
 
 // Define Poker-specific game states if needed, for now just a basic flow
 type PokerEstadoJuego = 'PRE_FLOP' | 'FLOP' | 'TURN' | 'RIVER' | 'SHOWDOWN' | 'FIN_RONDA';
@@ -124,7 +125,7 @@ export class PokerGame {
     private showdown(): void {
         this.estado = 'SHOWDOWN';
         this.ui.actualizarBote(this.bote); // Ensure final pot is displayed before winner takes it
-        this.ui.mostrarMensaje('¡Hora de la verdad! Determinando ganador...');
+        this.ui.mostrarMensaje(t(this.lang, 'poker.showdown'));
         
         // --- Placeholder for actual Poker hand evaluation logic ---
         // In a real game, each player's best 5-card hand (from their 2 hole cards + 5 community cards)
@@ -137,7 +138,7 @@ export class PokerGame {
         winner.ganar(this.bote); // Winner takes the pot
         this.bote = 0; // Pot is cleared after distribution
         this.ui.actualizarBote(this.bote); // Update UI to show empty pot
-        this.ui.mostrarMensaje(`¡${winner.id} gana la ronda con el bote de $${this.bote}!`);
+        this.ui.mostrarMensaje(t(this.lang, 'poker.winner', { name: winner.id, amount: this.bote }));
 
         this.estado = 'FIN_RONDA';
         // Allow for a new round
