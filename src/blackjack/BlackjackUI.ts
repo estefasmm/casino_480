@@ -11,6 +11,19 @@ export class BlackjackUI {
     private crupierPuntuacionSpan = document.getElementById('dealer-score')!;
     private playersContainer = document.getElementById('players-container')!;
     private mensajesDiv = document.getElementById('messages')!;
+    private currentLang = 'es';
+    private translations: { [k: string]: string } = {
+        playerLabel: 'Jugador',
+        balanceLabel: 'Cartera',
+        betLabel: 'Apuesta',
+        youText: 'TÚ',
+        hit: 'Pedir Carta',
+        stand: 'Plantarse',
+        bet: 'APOSTAR',
+        newRound: 'Apostar de Nuevo',
+        humanType: 'Humano',
+        aiType: 'IA',
+    };
     
     // Buttons
     private nuevaRondaButton = document.getElementById('new-round-button') as HTMLButtonElement;
@@ -31,17 +44,56 @@ export class BlackjackUI {
             playerArea.classList.add('player-area');
             playerArea.id = `player-area-${i}`;
             playerArea.innerHTML = `
-                <h2>Jugador ${i + 1}: <span id="player-score-${i}">0</span></h2>
+                <h2>${this.translations.playerLabel} ${i + 1}: <span id="player-score-${i}">0</span></h2>
                 <div id="player-cards-${i}" class="card-area"></div>
                 <div class="player-meta">
-                    <div class="player-type" id="player-type-${i}">Jugador</div>
-                    <div class="balance">Cartera: $<span id="player-balance-${i}">0</span></div>
-                    <div class="bet">Apuesta: $<span id="player-bet-${i}">0</span></div>
+                    <div class="player-name" id="player-name-${i}">${this.translations.playerLabel} ${i + 1}</div>
+                    <div class="player-type" id="player-type-${i}">${this.translations.humanType}</div>
+                    <div class="balance">${this.translations.balanceLabel}: $<span id="player-balance-${i}">0</span></div>
+                    <div class="bet">${this.translations.betLabel}: $<span id="player-bet-${i}">0</span></div>
                 </div>
-                <div class="you-badge" id="you-badge-${i}">TÚ</div>
+                <div class="you-badge" id="you-badge-${i}">${this.translations.youText}</div>
             `;
             this.playersContainer.appendChild(playerArea);
         }
+    }
+
+    /**
+     * Set UI language and update visible strings
+     */
+    public setLanguage(lang: string): void {
+        this.currentLang = lang || 'es';
+        const map: { [lang: string]: any } = {
+            es: { playerLabel: 'Jugador', balanceLabel: 'Cartera', betLabel: 'Apuesta', youText: 'TÚ', hit: 'Pedir Carta', stand: 'Plantarse', bet: 'APOSTAR', newRound: 'Apostar de Nuevo', humanType: 'Humano', aiType: 'IA' },
+            en: { playerLabel: 'Player', balanceLabel: 'Balance', betLabel: 'Bet', youText: 'YOU', hit: 'Hit', stand: 'Stand', bet: 'BET', newRound: 'Bet Again', humanType: 'Human', aiType: 'AI' },
+            pt: { playerLabel: 'Jogador', balanceLabel: 'Saldo', betLabel: 'Aposta', youText: 'VOCÊ', hit: 'Pedir Carta', stand: 'Parar', bet: 'APOSTAR', newRound: 'Apostar de Novo', humanType: 'Humano', aiType: 'IA' },
+            it: { playerLabel: 'Giocatore', balanceLabel: 'Saldo', betLabel: 'Puntata', youText: 'TU', hit: 'Chiedi Carta', stand: 'Stai', bet: 'PUNTATA', newRound: 'Rigioca', humanType: 'Umano', aiType: 'IA' },
+            fr: { playerLabel: 'Joueur', balanceLabel: 'Solde', betLabel: 'Mise', youText: 'TOI', hit: 'Tirer', stand: 'Rester', bet: 'MISER', newRound: 'Rejouer', humanType: 'Humain', aiType: 'IA' },
+            de: { playerLabel: 'Spieler', balanceLabel: 'Guthaben', betLabel: 'Einsatz', youText: 'DU', hit: 'Ziehen', stand: 'Passen', bet: 'EINSATZ', newRound: 'Nochmal', humanType: 'Mensch', aiType: 'KI' },
+            nl: { playerLabel: 'Speler', balanceLabel: 'Saldo', betLabel: 'Inzet', youText: 'JIJ', hit: 'Pak Kaart', stand: 'Passeren', bet: 'INZET', newRound: 'Opnieuw', humanType: 'Mens', aiType: 'AI' },
+        };
+        this.translations = map[this.currentLang] || map['es'];
+
+        // Update buttons (if present in DOM)
+        if (this.apostarButton) this.apostarButton.textContent = this.translations.bet;
+        if (this.nuevaRondaButton) this.nuevaRondaButton.textContent = this.translations.newRound;
+        if (this.pedirCartaButton) this.pedirCartaButton.textContent = this.translations.hit;
+        if (this.plantarseButton) this.plantarseButton.textContent = this.translations.stand;
+
+        // Update existing player-area labels if already created
+        const playerAreas = this.playersContainer.querySelectorAll('.player-area');
+        playerAreas.forEach((area, i) => {
+            const nameDiv = area.querySelector(`#player-name-${i}`) as HTMLElement;
+            if (nameDiv) nameDiv.textContent = `${this.translations.playerLabel} ${i + 1}`;
+            const typeDiv = area.querySelector(`#player-type-${i}`) as HTMLElement;
+            if (typeDiv) typeDiv.textContent = this.translations.humanType;
+            const balanceDiv = area.querySelector('.balance') as HTMLElement;
+            if (balanceDiv) balanceDiv.innerHTML = `${this.translations.balanceLabel}: $<span id="player-balance-${i}">${(document.getElementById(`player-balance-${i}`)?.textContent) || '0'}</span>`;
+            const betDiv = area.querySelector('.bet') as HTMLElement;
+            if (betDiv) betDiv.innerHTML = `${this.translations.betLabel}: $<span id="player-bet-${i}">${(document.getElementById(`player-bet-${i}`)?.textContent) || '0'}</span>`;
+            const youBadge = document.getElementById(`you-badge-${i}`);
+            if (youBadge) youBadge.textContent = this.translations.youText;
+        });
     }
 
     /**

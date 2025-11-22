@@ -15,11 +15,14 @@ export class BlackjackGame {
     private apuestaActual = 10;
     private readonly INCREMENTO_APUESTA = 10;
     private jugadorActualIndex = 0;
+    private lang: string = 'es';
 
-    constructor(private ui: BlackjackUI, private numeroJugadores: number, private carteraInicial: number, private nombreHumano: string = '') {
+    constructor(private ui: BlackjackUI, private numeroJugadores: number, private carteraInicial: number, private nombreHumano: string = '', lang: string = 'es') {
         // Limit maximum players to 4
         this.numeroJugadores = Math.min(Math.max(1, numeroJugadores), 4);
-        this.ui.crearAreasDeJugador(this.numeroJugadores);
+            this.lang = lang;
+            this.ui.setLanguage(this.lang);
+            this.ui.crearAreasDeJugador(this.numeroJugadores);
         for (let i = 0; i < this.numeroJugadores; i++) {
             // Only the first player is the human; others are AI-controlled players that play like the dealer
             const esHumano = i === 0;

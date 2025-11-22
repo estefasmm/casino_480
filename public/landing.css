@@ -29,7 +29,7 @@
     position: absolute;
     top: 12px;
     right: 12px; /* moved to the right */
-    background: rgba(0,0,0,0.6);
+    background: rgba(0,0,0,0.8); /* 80% black as requested */
     padding: 6px 8px;
     border-radius: 6px;
     z-index: 1200;
