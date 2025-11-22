@@ -16,14 +16,15 @@ export class BlackjackGame {
     private readonly INCREMENTO_APUESTA = 10;
     private jugadorActualIndex = 0;
 
-    constructor(private ui: BlackjackUI, private numeroJugadores: number, private carteraInicial: number) {
+    constructor(private ui: BlackjackUI, private numeroJugadores: number, private carteraInicial: number, private nombreHumano: string = '') {
         // Limit maximum players to 4
         this.numeroJugadores = Math.min(Math.max(1, numeroJugadores), 4);
         this.ui.crearAreasDeJugador(this.numeroJugadores);
         for (let i = 0; i < this.numeroJugadores; i++) {
             // Only the first player is the human; others are AI-controlled players that play like the dealer
             const esHumano = i === 0;
-            this.jugadores.push(new BlackjackPlayer(`Jugador ${i + 1}`, carteraInicial, false, esHumano));
+            const nombre = esHumano && this.nombreHumano ? this.nombreHumano : `Jugador ${i + 1}`;
+            this.jugadores.push(new BlackjackPlayer(nombre, carteraInicial, false, esHumano));
         }
         this.crupier = new BlackjackPlayer('Crupier', 0, true, false); // Dealer has no personal balance for betting
 
@@ -59,7 +60,9 @@ export class BlackjackGame {
         this.ui.limpiarTablero(this.numeroJugadores);
         this.ui.actualizarCarteras(this.jugadores.map(j => j.cartera));
         this.ui.actualizarApuestas(this.jugadores.map(j => j.apuestaActual));
+        // Update types (used to mark human area) and names separately
         this.ui.actualizarTipos(this.jugadores.map(j => j.esHumano ? 'Humano' : 'IA (conservadora)'));
+        this.ui.actualizarNombres(this.jugadores.map(j => j.id));
         this.ui.actualizarApuesta(this.apuestaActual);
         this.ui.mostrarMensaje('Realiza tu apuesta para empezar la ronda.');
         this.jugadorActualIndex = 0; // Reset player turn

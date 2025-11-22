@@ -6,6 +6,7 @@ class LandingPage {
     private pokerOption = document.getElementById('poker-option') as HTMLButtonElement;
     private balanceInput = document.getElementById('balance-input') as HTMLInputElement;
     private playerCountInput = document.getElementById('player-count-input') as HTMLSelectElement;
+    private playerNameInput = document.getElementById('player-name-input') as HTMLInputElement;
     private startGameButton = document.getElementById('start-game-button') as HTMLButtonElement;
 
     private juegoSeleccionado: JuegoSeleccionado = 'BlackJack';
@@ -30,6 +31,7 @@ class LandingPage {
         this.startGameButton.addEventListener('click', () => {
             const saldoInicial = parseInt(this.balanceInput.value, 10);
             const numeroJugadores = parseInt(this.playerCountInput.value, 10);
+            const nombre = (this.playerNameInput && this.playerNameInput.value) ? this.playerNameInput.value.trim() : '';
 
             if (isNaN(saldoInicial) || saldoInicial <= 0) {
                 alert('Por favor, introduce un saldo inicial válido.');
@@ -37,9 +39,11 @@ class LandingPage {
             }
 
             if (this.juegoSeleccionado === 'BlackJack') {
-                window.location.href = `blackjack.html?saldo=${saldoInicial}&jugadores=${numeroJugadores}`;
+                const nombreParam = nombre ? `&nombre=${encodeURIComponent(nombre)}` : '';
+                window.location.href = `blackjack.html?saldo=${saldoInicial}&jugadores=${numeroJugadores}${nombreParam}`;
             } else {
-                window.location.href = `poker.html?saldo=${saldoInicial}&jugadores=${numeroJugadores}`;
+                const nombreParam = nombre ? `&nombre=${encodeURIComponent(nombre)}` : '';
+                window.location.href = `poker.html?saldo=${saldoInicial}&jugadores=${numeroJugadores}${nombreParam}`;
             }
         });
     }

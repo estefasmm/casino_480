@@ -139,6 +139,18 @@ export class BlackjackUI {
     }
 
     /**
+     * Update player displayed names. This will replace the text inside the
+     * `player-type-<i>` elements with the provided player names.
+     * @param nombres Array of names for each player.
+     */
+    public actualizarNombres(nombres: string[]): void {
+        nombres.forEach((nombre, i) => {
+            const tipoDiv = document.getElementById(`player-type-${i}`);
+            if (tipoDiv) tipoDiv.textContent = nombre || `Jugador ${i + 1}`;
+        });
+    }
+
+    /**
      * Mark which player has the current turn. If index is null, clear turns.
      * Only the human player's area receives the visual pulsing when it's their turn.
      */

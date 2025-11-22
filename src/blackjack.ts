@@ -5,8 +5,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const saldoInicial = parseInt(urlParams.get('saldo') || '1000', 10);
     const numeroJugadores = parseInt(urlParams.get('jugadores') || '1', 10);
+    const nombreJugador = urlParams.get('nombre') || '';
 
     // Instantiate UI and Game classes
     const blackjackUI = new BlackjackUI();
-    new BlackjackGame(blackjackUI, numeroJugadores, saldoInicial);
+    new BlackjackGame(blackjackUI, numeroJugadores, saldoInicial, nombreJugador);
 });
