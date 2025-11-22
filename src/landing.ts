@@ -16,6 +16,7 @@ class LandingPage {
         this.configurarOpcionesJuego();
         this.configurarBotonInicio();
         this.configurarSelectorIdioma();
+        this.applyTranslations();
     }
 
     private configurarSelectorIdioma(): void {
@@ -32,16 +33,43 @@ class LandingPage {
 
         if (!this.languageSelect) return;
 
-        const applyColor = () => {
+        const applyColorAndTranslations = () => {
             const val = (this.languageSelect.value || 'es').toString().slice(0,2).toLowerCase();
             const color = colorMap[val] || '#ffd700';
             (this.languageSelect as HTMLSelectElement).style.color = color;
             (this.languageSelect as HTMLSelectElement).style.borderColor = color;
+            this.applyTranslations();
         };
 
-        this.languageSelect.addEventListener('change', applyColor);
-        // Apply initial color
-        applyColor();
+        this.languageSelect.addEventListener('change', applyColorAndTranslations);
+        // Apply initial color and translations
+        applyColorAndTranslations();
+    }
+
+    private applyTranslations(): void {
+        if (!this.languageSelect) return;
+        const lang = (this.languageSelect.value || 'es').toString().slice(0,2).toLowerCase();
+        const map: { [k: string]: any } = {
+            es: { balance: 'Saldo Inicial:', name: 'Tu Nombre:', players: 'Jugadores:', start: 'Empezar a Jugar', blackjack: 'BlackJack', poker: 'Poker' },
+            en: { balance: 'Starting Balance:', name: 'Your Name:', players: 'Players:', start: 'Start Playing', blackjack: 'BlackJack', poker: 'Poker' },
+            pt: { balance: 'Saldo Inicial:', name: 'Seu Nome:', players: 'Jogadores:', start: 'Começar a Jogar', blackjack: 'BlackJack', poker: 'Poker' },
+            it: { balance: 'Saldo Iniziale:', name: 'Il Tuo Nome:', players: 'Giocatori:', start: 'Inizia a Giocare', blackjack: 'BlackJack', poker: 'Poker' },
+            fr: { balance: 'Solde Initial:', name: 'Votre Nom:', players: 'Joueurs:', start: 'Commencer', blackjack: 'BlackJack', poker: 'Poker' },
+            de: { balance: 'Startguthaben:', name: 'Dein Name:', players: 'Spieler:', start: 'Spiel Starten', blackjack: 'BlackJack', poker: 'Poker' },
+            nl: { balance: 'Startbedrag:', name: 'Jouw Naam:', players: 'Spelers:', start: 'Begin Met Spelen', blackjack: 'BlackJack', poker: 'Poker' },
+        };
+
+        const t = map[lang] || map['es'];
+        const balanceLabel = document.querySelector('label[for="balance-input"]') as HTMLElement;
+        const nameLabel = document.querySelector('label[for="player-name-input"]') as HTMLElement;
+        const playersLabel = document.querySelector('label[for="player-count-input"]') as HTMLElement;
+        if (balanceLabel) balanceLabel.textContent = t.balance;
+        if (nameLabel) nameLabel.textContent = t.name;
+        if (playersLabel) playersLabel.textContent = t.players;
+
+        if (this.startGameButton) this.startGameButton.textContent = t.start;
+        if (this.blackjackOption) this.blackjackOption.textContent = t.blackjack;
+        if (this.pokerOption) this.pokerOption.textContent = t.poker;
     }
 
     private configurarOpcionesJuego(): void {

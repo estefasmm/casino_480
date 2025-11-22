@@ -20,7 +20,12 @@ export class PokerGame {
     private readonly NUM_CARTAS_FLOP = 3;
     private readonly NUM_CARTAS_TURN_RIVER = 1;
 
-    constructor(private ui: PokerUI, numeroJugadores: number, carteraInicial: number) {
+    private lang: string = 'es';
+
+    constructor(private ui: PokerUI, numeroJugadores: number, carteraInicial: number, lang: string = 'es') {
+        this.lang = lang;
+        // inform UI about selected language before creating areas
+        try { this.ui.setLanguage(this.lang); } catch (e) { /* noop if method missing */ }
         for (let i = 0; i < numeroJugadores; i++) {
             this.jugadores.push(new PokerPlayer(`Jugador ${i + 1}`, carteraInicial));
         }
