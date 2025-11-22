@@ -15,6 +15,33 @@ class LandingPage {
     constructor() {
         this.configurarOpcionesJuego();
         this.configurarBotonInicio();
+        this.configurarSelectorIdioma();
+    }
+
+    private configurarSelectorIdioma(): void {
+        // Map language code -> color (text color for selector)
+        const colorMap: { [key: string]: string } = {
+            es: '#ffd700',    // Español - gold
+            en: '#00bfff',    // English - skyblue
+            pt: '#32cd32',    // Português - green
+            it: '#ff8c00',    // Italiano - orange
+            fr: '#6495ed',    // Français - cornflower
+            de: '#d2691e',    // Deutsch - chocolate
+            nl: '#ff69b4'     // Nederlands - hotpink
+        };
+
+        if (!this.languageSelect) return;
+
+        const applyColor = () => {
+            const val = (this.languageSelect.value || 'es').toString().slice(0,2).toLowerCase();
+            const color = colorMap[val] || '#ffd700';
+            (this.languageSelect as HTMLSelectElement).style.color = color;
+            (this.languageSelect as HTMLSelectElement).style.borderColor = color;
+        };
+
+        this.languageSelect.addEventListener('change', applyColor);
+        // Apply initial color
+        applyColor();
     }
 
     private configurarOpcionesJuego(): void {
