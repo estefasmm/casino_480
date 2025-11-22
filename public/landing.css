@@ -28,7 +28,7 @@
 .lang-selector {
     position: absolute;
     top: 12px;
-    left: 12px;
+    right: 12px; /* moved to the right */
     background: rgba(0,0,0,0.6);
     padding: 6px 8px;
     border-radius: 6px;
@@ -39,9 +39,9 @@
     background: transparent;
     color: #ffd700;
     border: none;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     font-family: 'Cinzel', serif;
-    padding: 2px 4px;
+    padding: 4px 6px;
 }
 .visually-hidden {
     position: absolute !important;
