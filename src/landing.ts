@@ -33,16 +33,27 @@ class LandingPage {
 
         if (!this.languageSelect) return;
 
-        const applyColorAndTranslations = () => {
-            const val = (this.languageSelect.value || 'es').toString().slice(0,2).toLowerCase();
+        // Determine initial language: URL/localStorage/browser
+        const detectPreferred = (): string => {
+            const stored = window.localStorage.getItem('lang');
+            if (stored) return stored;
+            const nav = (navigator.languages && navigator.languages[0]) || (navigator.language) || 'es';
+            return nav.toString().slice(0,2).toLowerCase();
+        };
+
+        const applyColorAndTranslations = (valParam?: string) => {
+            const val = (valParam || this.languageSelect.value || detectPreferred()).toString().slice(0,2).toLowerCase();
+            // persist choice
+            window.localStorage.setItem('lang', val);
+            this.languageSelect.value = val;
             const color = colorMap[val] || '#ffd700';
             (this.languageSelect as HTMLSelectElement).style.color = color;
             (this.languageSelect as HTMLSelectElement).style.borderColor = color;
             this.applyTranslations();
         };
 
-        this.languageSelect.addEventListener('change', applyColorAndTranslations);
-        // Apply initial color and translations
+        this.languageSelect.addEventListener('change', () => applyColorAndTranslations(this.languageSelect.value));
+        // Apply initial color and translations from stored/browser preference
         applyColorAndTranslations();
     }
 
