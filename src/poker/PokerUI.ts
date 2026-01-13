@@ -10,6 +10,32 @@ export class PokerUI {
     private communityCardsContainer = document.getElementById('community-cards')!;
     private potDiv = document.getElementById('pot')!;
     private mensajesDiv = document.getElementById('messages')!; // Assuming a messages div exists in poker.html
+    private currentLang = 'es';
+    private translations: { [k: string]: string } = {
+        potLabel: 'Bote',
+        playerBalanceLabel: '$',
+        showdownMessage: '¡Hora de la verdad! Determinando ganador...',
+    };
+
+    public setLanguage(lang: string): void {
+        this.currentLang = lang || 'es';
+        const map: { [lang: string]: any } = {
+            es: { potLabel: 'Bote', playerBalanceLabel: '$', showdownMessage: '¡Hora de la verdad! Determinando ganador...' },
+            en: { potLabel: 'Pot', playerBalanceLabel: '$', showdownMessage: 'Showdown! Determining winner...' },
+            pt: { potLabel: 'Pote', playerBalanceLabel: '$', showdownMessage: 'Hora da verdade! Determinando vencedor...' },
+            it: { potLabel: 'Piatto', playerBalanceLabel: '$', showdownMessage: 'È il momento della verità! Determinando il vincitore...' },
+            fr: { potLabel: 'Pot', playerBalanceLabel: '$', showdownMessage: 'Coup d\'œil! Détermination du gagnant...' },
+            de: { potLabel: 'Pot', playerBalanceLabel: '$', showdownMessage: 'Showdown! Gewinner wird ermittelt...' },
+            nl: { potLabel: 'Pot', playerBalanceLabel: '$', showdownMessage: 'Tijd van de waarheid! Bepalen van winnaar...' },
+        };
+        this.translations = map[this.currentLang] || map['es'];
+        // Update pot label if present
+        if (this.potDiv) {
+            // extract numeric part if exists
+            const numeric = (this.potDiv.textContent || '').replace(/[^0-9$.,]/g, '');
+            this.potDiv.textContent = `${this.translations.potLabel}: ${numeric}`;
+        }
+    }
 
     /**
      * Creates and displays player areas on the table in a circular layout.
@@ -35,7 +61,7 @@ export class PokerUI {
 
             playerArea.innerHTML = `
                 <div class="player-name">${player.id}</div> 
-                <div class="player-balance">$${player.cartera}</div>
+                <div class="player-balance">${this.translations.playerBalanceLabel}${player.cartera}</div>
                 <div id="player-cards-${i}" class="player-cards"></div>
             `;
             this.playersContainer.appendChild(playerArea);
@@ -71,7 +97,7 @@ export class PokerUI {
      * @param pot The current pot value.
      */
     public actualizarBote(pot: number): void {
-        this.potDiv.textContent = `Bote: $${pot}`;
+        this.potDiv.textContent = `${this.translations.potLabel}: $${pot}`;
     }
 
     /**

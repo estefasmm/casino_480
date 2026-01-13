@@ -10,11 +10,15 @@ export class BlackjackPlayer extends Jugador {
     public puntuacion: number = 0;
     public cartera: number = 0;
     public esCrupier: boolean = false;
+    public esHumano: boolean = false; // true for the real human player
+    public activo: boolean = true; // false if the player is out for the round
+    public apuestaActual: number = 0; // current bet placed by this player for the round
 
-    constructor(id: string, carteraInicial: number = 1000, esCrupier: boolean = false) {
+    constructor(id: string, carteraInicial: number = 1000, esCrupier: boolean = false, esHumano: boolean = false) {
         super(id); // Call the constructor of the base Jugador class
         this.cartera = carteraInicial;
         this.esCrupier = esCrupier;
+        this.esHumano = esHumano;
     }
 
     /**
@@ -75,6 +79,7 @@ export class BlackjackPlayer extends Jugador {
     public apostar(cantidad: number): boolean {
         if (cantidad > this.cartera) return false;
         this.cartera -= cantidad;
+        this.apuestaActual = cantidad;
         return true;
     }
 
@@ -84,5 +89,25 @@ export class BlackjackPlayer extends Jugador {
      */
     public ganar(cantidad: number): void {
         this.cartera += cantidad;
+    }
+
+    /**
+     * Bet all remaining funds (all-in). Returns false if no funds.
+     */
+    public apostarTodo(): boolean {
+        if (this.cartera <= 0) return false;
+        this.apuestaActual = this.cartera;
+        this.cartera = 0;
+        return true;
+    }
+
+    /**
+     * Reset per-round state like apuestaActual and activo.
+     */
+    public reiniciarParaRonda(): void {
+        this.apuestaActual = 0;
+        this.activo = true;
+        this.reiniciarMano();
+        this.puntuacion = 0;
     }
 }

@@ -76,6 +76,181 @@ h2 {
     border: 1px solid rgba(255, 215, 0, 0.2);
 }
 
+/* Jugador inactivo (p.ej. IA sin fondos) */
+.player-area.inactive {
+    opacity: 0.45;
+    filter: grayscale(60%);
+    pointer-events: none; /* evitar interacciones */
+    box-shadow: none;
+    transform: scale(0.99);
+}
+
+/* Resaltar y oscurecer el área del jugador humano para localizarla rápidamente */
+.player-area.human {
+    background-color: rgba(0, 0, 0, 0.6); /* más oscura */
+    border: 2px solid rgba(255, 215, 0, 0.9); /* borde dorado más visible */
+    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.25), inset 0 -6px 30px rgba(0,0,0,0.4);
+    transform: translateY(-4px) scale(1.02);
+    transition: all 0.25s ease;
+}
+
+.player-area.human .player-type {
+    font-weight: 900;
+    color: #ffd700;
+}
+
+/* Badge for the human player */
+.you-badge {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    background: rgba(0,0,0,0.6);
+    color: #ffd700;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-weight: 900;
+    font-size: 0.9rem;
+    display: none;
+    border: 1px solid rgba(255,215,0,0.15);
+}
+
+/* Show badge when area is human */
+.player-area.human .you-badge {
+    display: block;
+}
+
+/* Turn indicator: subtle pulsing glow when it's the human's turn */
+@keyframes pulse-turn {
+    0% { box-shadow: 0 6px 20px rgba(255, 215, 0, 0.18), inset 0 -6px 30px rgba(0,0,0,0.4); }
+    50% { box-shadow: 0 10px 30px rgba(255, 215, 0, 0.35), inset 0 -8px 40px rgba(0,0,0,0.45); }
+    100% { box-shadow: 0 6px 20px rgba(255, 215, 0, 0.18), inset 0 -6px 30px rgba(0,0,0,0.4); }
+}
+
+/* Blackjack-specific compact view (scoped to the blackjack page's #game-container) */
+#game-container {
+    max-width: 1100px; /* reduce max width for a more compact view */
+    padding: clamp(8px, 1.5vw, 12px);
+}
+
+/* Reduce headings and general typography inside blackjack container */
+#game-container h1 {
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+}
+#game-container h2 {
+    font-size: clamp(1rem, 2.2vw, 1.3rem);
+}
+
+/* Make player areas and cards more compact inside blackjack */
+#game-container .player-area {
+    min-height: 120px;
+    padding: 10px;
+}
+
+#game-container .card-area {
+    min-height: clamp(110px, 16vh, 140px);
+}
+
+#game-container .card {
+    width: clamp(60px, 9vw, 80px);
+    height: clamp(90px, 13vw, 110px);
+}
+
+#game-container .balance, #game-container .bet-controls .current-bet {
+    font-size: clamp(1rem, 2.2vw, 1.2em);
+}
+
+#game-container .player-area .you-badge {
+    top: 6px;
+    right: 8px;
+    padding: 4px 6px;
+    font-size: 0.8rem;
+}
+
+/* Compact actions and betting controls */
+#game-container .actions button, #game-container #bet-button, #game-container .bet-controls button {
+    padding: 8px 16px;
+    font-size: clamp(0.9rem, 2vw, 1.1rem);
+}
+
+/* Ensure responsive stacking for very small widths */
+@media (max-width: 480px) {
+    #game-container {
+        padding: 8px;
+    }
+    #game-container .players-container {
+        gap: 10px;
+    }
+    #game-container .card {
+        width: 56px;
+        height: 80px;
+    }
+}
+
+/* Blackjack betting controls: put +/- together and style the 'Apostar' area */
+#game-container .bet-controls {
+    display: flex;
+    align-items: center;
+    gap: calc(8px * 1.05); /* 5% extra spacing */
+}
+
+/* Force ordering so - and + are adjacent, then the current-bet, then the bet button */
+#game-container .bet-controls #decrease-bet-button { order: 1; }
+#game-container .bet-controls #increase-bet-button { order: 2; }
+#game-container .bet-controls .current-bet { order: 3; }
+#game-container .bet-controls #bet-button { order: 4; }
+
+/* Make +/- buttons visually grouped */
+#game-container .bet-controls #decrease-bet-button,
+#game-container .bet-controls #increase-bet-button {
+    width: 40px;
+    height: 40px;
+    padding: 2px;
+    border-radius: 6px;
+    background: linear-gradient(145deg, #333, #111);
+    color: #ffd700;
+    border-color: rgba(255,215,0,0.15);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Current bet styling */
+#game-container .bet-controls .current-bet {
+    background: rgba(0,0,0,0.45);
+    padding: 6px 10px;
+    border-radius: 6px;
+    color: #fff;
+    font-weight: 700;
+}
+
+/* Make the main 'Apostar' button more semantically highlighted */
+#game-container .bet-controls #bet-button {
+    background: linear-gradient(45deg, #ffd700, #f0c000);
+    color: #111;
+    border: 1px solid #dcab2d;
+    /* Doble ancho aproximado: aumentar padding horizontal */
+    padding: 8px 40px;
+    min-width: 240px; /* asegurar ancho mínimo al duplicar */
+    border-radius: 8px;
+    box-shadow: 0 6px 8px rgba(218,165,32,0.15);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+/* On hover, slightly intensify the highlight */
+#game-container .bet-controls #bet-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(218,165,32,0.25);
+}
+
+.player-area.turn {
+    transform: translateY(-6px) scale(1.03);
+    animation: pulse-turn 1.2s ease-in-out infinite;
+}
+
 .players-container {
     display: flex;
     justify-content: center;
@@ -207,6 +382,14 @@ h2 {
     background: linear-gradient(145deg, #ffd700, #f0c000);
     color: #111;
     border-color: #DAA520;
+    /* Mantener coherencia fuera del scope específico */
+    padding: 8px 40px;
+    min-width: 240px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    text-transform: uppercase;
 }
 
 /* Media Query para pantallas pequeñas */

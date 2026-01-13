@@ -11,6 +11,18 @@
     <script type="module" src="../dist/landing.js" defer></script>
 </head>
 <body>
+    <div class="lang-selector" id="lang-selector">
+        <label for="language-select" class="visually-hidden">Idioma</label>
+        <select id="language-select" aria-label="Seleccionar idioma">
+            <option value="es" selected>Español</option>
+            <option value="en">English</option>
+            <option value="pt">Português</option>
+            <option value="it">Italiano</option>
+            <option value="fr">Français</option>
+            <option value="de">Deutsch</option>
+            <option value="nl">Nederlands</option>
+        </select>
+    </div>
     <div id="landing-container" class="landing-container">
         <h1>Casino 480</h1>
         <div class="game-selection">
@@ -20,6 +32,10 @@
         <div class="balance-selection">
             <label for="balance-input">Saldo Inicial:</label>
             <input type="number" id="balance-input" value="1000" min="100" step="100">
+        </div>
+        <div class="name-selection">
+            <label for="player-name-input">Tu Nombre:</label>
+            <input type="text" id="player-name-input" placeholder="Tu nombre" value="Jugador">
         </div>
         <div class="player-selection">
             <label for="player-count-input">Jugadores:</label>
